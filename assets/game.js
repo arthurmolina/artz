@@ -1,18 +1,18 @@
-/* Molina Runner — mini jogo 2D estilo endless runner.
+/* Molina Runner — mini jogo 2D estilo endless runner, embutido na página.
+ * Ao carregar, roda em modo demonstração (personagem correndo, sem obstáculos);
+ * START ou barra de espaço começam a partida de verdade.
  * Sprites: assets/sprites/frame_*.png (recortados de assets/sprites/sheet_original.png)
- * Vídeo do personagem correndo: assets/video/running.mp4 (tela inicial)
+ * Vídeo do personagem correndo: assets/video/running.mp4 (tela de game over)
  */
 (function () {
   'use strict';
 
   // ---------- DOM ----------
-  var overlay = document.getElementById('game-overlay');
   var canvas = document.getElementById('game-canvas');
   var ctx = canvas.getContext('2d');
   var startScreen = document.getElementById('game-start');
   var overScreen = document.getElementById('game-over');
   var finalScoreEl = document.getElementById('final-score');
-  var startVideo = startScreen.querySelector('video');
 
   var W = 900, H = 300, GROUND_Y = 262;
   canvas.width = W;
@@ -25,8 +25,7 @@
     run2: 'assets/sprites/frame_04.png',
     jump: 'assets/sprites/frame_06.png',
     duck: 'assets/sprites/frame_04.png',
-    dead: 'assets/sprites/frame_08.png',
-    idle: 'assets/sprites/frame_01.png'
+    dead: 'assets/sprites/frame_08.png'
   };
   var images = {};
   var pending = 0;
@@ -41,9 +40,9 @@
   });
 
   // ---------- Estado ----------
-  var STATE = { IDLE: 0, PLAYING: 1, OVER: 2 };
-  var state = STATE.IDLE;
-  var rafId = null;
+  // DEMO: personagem corre sozinho, sem obstáculos, com o botão START por cima
+  var STATE = { DEMO: 0, PLAYING: 1, OVER: 2 };
+  var state = STATE.DEMO;
   var lastTime = 0;
 
   var player, obstacles, speed, distance, score, hiScore, spawnIn, groundOffset;
@@ -70,6 +69,7 @@
     spawnIn = 900; // px até o primeiro obstáculo
     groundOffset = 0;
   }
+  reset();
 
   // ---------- Cenário ----------
   var stars = [];
@@ -132,13 +132,12 @@
 
   // ---------- Loop ----------
   function update(dt) {
-    speed = Math.min(900, speed + 9 * dt);
+    var playing = state === STATE.PLAYING;
+    if (playing) speed = Math.min(900, speed + 9 * dt);
     var dx = speed * dt;
     distance += dx;
-    var newScore = Math.floor(distance / 10);
-    if (newScore !== score && newScore > 0 && newScore % 100 === 0) beep(880, 0.12);
-    score = newScore;
     groundOffset = (groundOffset + dx) % 40;
+    player.animTime += dt;
 
     // física do pulo (segurar o pulo sobe mais alto)
     if (!player.onGround) {
@@ -151,7 +150,12 @@
         player.onGround = true;
       }
     }
-    player.animTime += dt;
+
+    if (!playing) return; // modo demonstração: sem obstáculos nem pontuação
+
+    var newScore = Math.floor(distance / 10);
+    if (newScore !== score && newScore > 0 && newScore % 100 === 0) beep(880, 0.12);
+    score = newScore;
 
     // obstáculos
     spawnIn -= dx;
@@ -239,9 +243,20 @@
   }
 
   function drawHUD() {
-    ctx.fillStyle = '#9ca3af';
-    ctx.font = 'bold 16px monospace';
     ctx.textBaseline = 'top';
+    ctx.fillStyle = '#9ca3af';
+    if (state === STATE.DEMO) {
+      ctx.font = 'bold 20px monospace';
+      ctx.fillText('MOLINA RUNNER', 16, 14);
+      if (hiScore > 0) {
+        ctx.font = 'bold 16px monospace';
+        ctx.textAlign = 'right';
+        ctx.fillText('HI ' + String(hiScore).padStart(5, '0'), W - 16, 14);
+        ctx.textAlign = 'left';
+      }
+      return;
+    }
+    ctx.font = 'bold 16px monospace';
     ctx.textAlign = 'right';
     var hi = Math.max(hiScore, score);
     ctx.fillText('HI ' + String(hi).padStart(5, '0') + '  ' + String(score).padStart(5, '0'), W - 16, 14);
@@ -249,15 +264,16 @@
   }
 
   function frame(t) {
-    rafId = requestAnimationFrame(frame);
+    requestAnimationFrame(frame);
     var dt = Math.min(0.05, (t - lastTime) / 1000 || 0);
     lastTime = t;
-    if (state === STATE.PLAYING) update(dt);
+    if (state !== STATE.OVER) update(dt);
     drawBackground();
     drawObstacles();
     drawPlayer();
     drawHUD();
   }
+  requestAnimationFrame(frame);
 
   // ---------- Controle de jogo ----------
   function startGame() {
@@ -291,25 +307,6 @@
     player.holdingJump = true;
   }
 
-  function openGame() {
-    overlay.classList.add('open');
-    document.body.style.overflow = 'hidden';
-    if (startVideo) startVideo.play().catch(function () {});
-    state = STATE.IDLE;
-    reset();
-    startScreen.style.display = 'flex';
-    overScreen.style.display = 'none';
-    lastTime = performance.now();
-    if (rafId === null) rafId = requestAnimationFrame(frame);
-  }
-
-  function closeGame() {
-    overlay.classList.remove('open');
-    document.body.style.overflow = '';
-    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
-    state = STATE.IDLE;
-  }
-
   function primaryAction() {
     if (state === STATE.PLAYING) jump();
     else if (pending === 0) startGame();
@@ -318,36 +315,29 @@
   // ---------- Input ----------
   document.addEventListener('keydown', function (e) {
     var typing = /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement && document.activeElement.tagName);
-    var gameOpen = overlay.classList.contains('open');
-
-    if (!gameOpen) {
-      if (e.code === 'Space' && !typing) {
-        e.preventDefault();
-        openGame();
-      }
-      return;
-    }
+    if (typing) return;
 
     switch (e.code) {
       case 'Space':
       case 'ArrowUp':
       case 'KeyW':
         e.preventDefault();
-        if (!e.repeat) primaryAction();
+        if (!e.repeat) {
+          if (state !== STATE.PLAYING) canvas.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+          primaryAction();
+        }
         break;
       case 'ArrowDown':
       case 'KeyS':
-        e.preventDefault();
-        if (state === STATE.PLAYING && player.onGround) player.ducking = true;
-        break;
-      case 'Escape':
-        closeGame();
+        if (state === STATE.PLAYING) {
+          e.preventDefault();
+          if (player.onGround) player.ducking = true;
+        }
         break;
     }
   });
 
   document.addEventListener('keyup', function (e) {
-    if (!overlay.classList.contains('open')) return;
     if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') player.holdingJump = false;
     if (e.code === 'ArrowDown' || e.code === 'KeyS') player.ducking = false;
   });
@@ -357,11 +347,9 @@
     primaryAction();
   });
   canvas.addEventListener('pointerup', function () {
-    if (player) player.holdingJump = false;
+    player.holdingJump = false;
   });
 
-  document.getElementById('play-button').addEventListener('click', openGame);
   document.getElementById('start-button').addEventListener('click', startGame);
   document.getElementById('restart-button').addEventListener('click', startGame);
-  document.getElementById('close-game').addEventListener('click', closeGame);
 })();
