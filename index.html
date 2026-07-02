@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arthur Molina</title>
+  <link rel="icon" type="image/png" href="assets/sprites/frame_01.png">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <style>
+    #game-overlay { display: none; }
+    #game-overlay.open { display: flex; }
+    #game-canvas { image-rendering: pixelated; image-rendering: crisp-edges; }
+    .press-space kbd {
+      background: #374151; border-radius: 4px; padding: 1px 8px;
+      border-bottom: 2px solid #1f2937; font-family: inherit;
+    }
+  </style>
+</head>
+<body class="bg-gray-900 text-white font-sans flex flex-col items-center justify-center min-h-screen p-6">
+  <img src="https://s.gravatar.com/avatar/3d0fef8d3478a29c5a5ea6ee3643db24?s=480&r=pg&d=https%3A%2F%2Fcdn.auth0.com%2Favatars%2Far.png" alt="Arthur Molina" class="w-32 h-32 rounded-full mb-4 border-4 border-white">
+  <h1 class="text-4xl font-bold">Arthur Molina</h1>
+  <p class="text-gray-400 text-lg mb-6">Programmer. Creator. Maker.</p>
+
+  <div class="flex flex-col gap-4 w-full max-w-sm">
+    <a href="https://artz.to/blog" target="_blank" class="flex items-center gap-3 bg-gray-800 p-4 rounded-lg hover:bg-gray-700 transition">
+      <i data-feather="book"></i>
+      <div>
+        <div class="font-semibold">Read my Blog</div>
+        <div class="text-sm text-gray-400">Thoughts, tutorials, and more</div>
+      </div>
+    </a>
+    <a href="https://github.com/arthurmolina/fluxbit_view_components" target="_blank" class="flex items-center gap-3 bg-gray-800 p-4 rounded-lg hover:bg-gray-700 transition">
+      <i data-feather="package"></i>
+      <div>
+        <div class="font-semibold">Fluxbit View Components</div>
+        <div class="text-sm text-gray-400">Design System based on Flowbite</div>
+      </div>
+    </a>
+    <a href="https://github.com/arthurmolina/anyicon" target="_blank" class="flex items-center gap-3 bg-gray-800 p-4 rounded-lg hover:bg-gray-700 transition">
+      <i data-feather="package"></i>
+      <div>
+        <div class="font-semibold">Anyicon</div>
+        <div class="text-sm text-gray-400">Add any icon from any library to your ruby project</div>
+      </div>
+    </a>
+
+    <button id="play-button" class="flex items-center gap-3 bg-gradient-to-r from-red-700 to-red-600 p-4 rounded-lg hover:from-red-600 hover:to-red-500 transition text-left w-full">
+      <i data-feather="play"></i>
+      <div>
+        <div class="font-semibold">Jogar</div>
+        <div class="text-sm text-red-200">Molina Runner — um mini jogo 2D</div>
+      </div>
+    </button>
+  </div>
+
+  <div class="flex gap-6 mt-8">
+    <a href="https://linkedin.com/in/arthurmolina" target="_blank" class="hover:text-gray-300"><i data-feather="linkedin"></i></a>
+    <a href="https://github.com/arthurmolina" target="_blank" class="hover:text-gray-300"><i data-feather="github"></i></a>
+    <a href="https://instagram.com/arthurfelipemm" target="_blank" class="hover:text-gray-300"><i data-feather="instagram"></i></a>
+  </div>
+
+  <p class="press-space text-gray-500 text-sm mt-8">Dica: aperte <kbd>espaço</kbd> para jogar</p>
+
+  <!-- Game overlay -->
+  <div id="game-overlay" class="fixed inset-0 z-50 bg-gray-950/95 flex-col items-center justify-center p-4">
+    <div class="w-full max-w-4xl">
+      <div class="flex items-center justify-between mb-2">
+        <h2 class="text-xl font-bold tracking-wide">MOLINA RUNNER</h2>
+        <button id="close-game" class="text-gray-400 hover:text-white flex items-center gap-1 text-sm">
+          fechar <kbd class="bg-gray-800 rounded px-2 py-0.5 text-xs">esc</kbd>
+        </button>
+      </div>
+      <div class="relative">
+        <canvas id="game-canvas" class="w-full rounded-lg border border-gray-700 bg-gray-900"></canvas>
+
+        <!-- Start screen -->
+        <div id="game-start" class="absolute inset-0 flex flex-col items-center justify-center gap-4 bg-gray-950/80 rounded-lg text-center p-4">
+          <video src="assets/video/running.mp4" muted loop autoplay playsinline class="h-32 md:h-40 rounded-lg border border-gray-700"></video>
+          <p class="text-gray-300">Fuja dos bugs e das entregas atrasadas!</p>
+          <p class="text-sm text-gray-400">
+            <kbd class="bg-gray-800 rounded px-2 py-0.5">espaço</kbd> / <kbd class="bg-gray-800 rounded px-2 py-0.5">&#8593;</kbd> pular &nbsp;·&nbsp;
+            <kbd class="bg-gray-800 rounded px-2 py-0.5">&#8595;</kbd> abaixar &nbsp;·&nbsp; toque na tela para pular
+          </p>
+          <button id="start-button" class="bg-red-600 hover:bg-red-500 transition px-8 py-3 rounded-lg font-bold text-lg">JOGAR</button>
+        </div>
+
+        <!-- Game over screen -->
+        <div id="game-over" class="absolute inset-0 hidden flex-col items-center justify-center gap-3 bg-gray-950/80 rounded-lg text-center p-4">
+          <img src="assets/sprites/frame_08.png" alt="" class="h-24" style="image-rendering: pixelated;">
+          <p class="text-2xl font-bold">GAME OVER</p>
+          <p id="final-score" class="text-gray-300"></p>
+          <button id="restart-button" class="bg-red-600 hover:bg-red-500 transition px-8 py-3 rounded-lg font-bold">JOGAR DE NOVO</button>
+          <p class="text-xs text-gray-500">ou aperte <kbd class="bg-gray-800 rounded px-2 py-0.5">espaço</kbd></p>
+        </div>
+      </div>
+      <p class="text-xs text-gray-500 mt-2 text-center">Personagem: sprites em <code>assets/sprites/</code> · vídeo em <code>assets/video/running.mp4</code></p>
+    </div>
+  </div>
+
+  <script>feather.replace()</script>
+  <script src="assets/game.js"></script>
+</body>
+</html>
