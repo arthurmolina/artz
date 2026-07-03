@@ -15,33 +15,31 @@
     }
   </style>
 </head>
-<body class="bg-gray-900 text-white font-sans flex flex-col items-center justify-center min-h-screen p-6">
+<body class="bg-gray-900 text-white font-sans flex flex-col items-center justify-center min-h-screen p-6 overflow-x-hidden">
   <img src="https://s.gravatar.com/avatar/3d0fef8d3478a29c5a5ea6ee3643db24?s=480&r=pg&d=https%3A%2F%2Fcdn.auth0.com%2Favatars%2Far.png" alt="Arthur Molina" class="w-32 h-32 rounded-full mb-4 border-4 border-white">
   <h1 class="text-4xl font-bold">Arthur Molina</h1>
   <p class="text-gray-400 text-lg mb-6">Programmer. Creator. Maker.</p>
 
-  <!-- Molina Runner: roda em modo demonstração até apertar START (ou espaço) -->
-  <div class="w-full max-w-3xl mb-8">
-    <div class="relative">
-      <canvas id="game-canvas" class="w-full rounded-lg border border-gray-700 bg-gray-900"></canvas>
+  <!-- Molina Runner: faixa integrada à página, em modo demonstração até apertar START (ou espaço) -->
+  <div class="relative w-screen my-2">
+    <canvas id="game-canvas" class="block" style="width: 100%; height: 300px"></canvas>
 
-      <!-- Tela inicial: só o botão por cima do personagem correndo -->
-      <div id="game-start" class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center pointer-events-none">
-        <button id="start-button" class="pointer-events-auto bg-red-600 hover:bg-red-500 transition px-10 py-3 rounded-lg font-bold text-lg shadow-lg shadow-red-950/50">START</button>
-        <p class="text-xs text-gray-400">
-          <kbd>espaço</kbd> / <kbd>&#8593;</kbd> pular &nbsp;·&nbsp;
-          <kbd>&#8595;</kbd> abaixar &nbsp;·&nbsp; toque na tela para pular
-        </p>
-      </div>
+    <!-- Tela inicial: só o botão por cima do personagem correndo -->
+    <div id="game-start" class="absolute inset-0 flex flex-col items-center justify-center gap-3 text-center pointer-events-none">
+      <button id="start-button" class="pointer-events-auto bg-red-600 hover:bg-red-500 transition px-10 py-3 rounded-lg font-bold text-lg shadow-lg shadow-red-950/50">START</button>
+      <p class="text-xs text-gray-400">
+        <kbd>espaço</kbd> / <kbd>&#8593;</kbd> pular &nbsp;·&nbsp;
+        <kbd>&#8595;</kbd> abaixar &nbsp;·&nbsp; toque na tela para pular
+      </p>
+    </div>
 
-      <!-- Game over -->
-      <div id="game-over" class="absolute inset-0 hidden flex-col items-center justify-center gap-3 bg-gray-950/80 rounded-lg text-center p-4">
-        <video src="assets/video/running.mp4" muted loop autoplay playsinline class="h-24 md:h-32 rounded-lg border border-gray-700"></video>
-        <p class="text-2xl font-bold">GAME OVER</p>
-        <p id="final-score" class="text-gray-300"></p>
-        <button id="restart-button" class="bg-red-600 hover:bg-red-500 transition px-8 py-2.5 rounded-lg font-bold">JOGAR DE NOVO</button>
-        <p class="text-xs text-gray-500">ou aperte <kbd>espaço</kbd></p>
-      </div>
+    <!-- Game over -->
+    <div id="game-over" class="absolute inset-0 hidden flex-col items-center justify-center gap-3 bg-gray-900/80 text-center p-4">
+      <video src="assets/video/running.mp4" muted loop autoplay playsinline class="h-24 md:h-32 rounded-lg"></video>
+      <p class="text-2xl font-bold">GAME OVER</p>
+      <p id="final-score" class="text-gray-300"></p>
+      <button id="restart-button" class="bg-red-600 hover:bg-red-500 transition px-8 py-2.5 rounded-lg font-bold">JOGAR DE NOVO</button>
+      <p class="text-xs text-gray-500">ou aperte <kbd>espaço</kbd></p>
     </div>
   </div>
 

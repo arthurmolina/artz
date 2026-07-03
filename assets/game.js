@@ -14,10 +14,17 @@
   var overScreen = document.getElementById('game-over');
   var finalScoreEl = document.getElementById('final-score');
 
-  var W = 900, H = 300, GROUND_Y = 262;
-  canvas.width = W;
-  canvas.height = H;
-  ctx.imageSmoothingEnabled = false;
+  // Largura acompanha a página (faixa integrada, sem moldura); altura fixa.
+  var H = 300, GROUND_Y = 262;
+  var W = 0;
+  function resize() {
+    W = canvas.clientWidth || 900;
+    canvas.width = W;
+    canvas.height = H;
+    ctx.imageSmoothingEnabled = false;
+  }
+  resize();
+  window.addEventListener('resize', resize);
 
   // ---------- Sprites ----------
   var SPRITES = {
@@ -72,20 +79,22 @@
   reset();
 
   // ---------- Cenário ----------
+  // Gerado sobre um ciclo largo fixo, repetido em qualquer largura de tela.
+  var CYCLE = 4800;
   var stars = [];
-  for (var i = 0; i < 40; i++) {
-    stars.push({ x: Math.random() * W, y: Math.random() * (GROUND_Y - 100), r: Math.random() * 1.5 + 0.5 });
+  for (var i = 0; i < 220; i++) {
+    stars.push({ x: Math.random() * CYCLE, y: Math.random() * (GROUND_Y - 100), r: Math.random() * 1.5 + 0.5 });
   }
   var skylineFar = [], skylineNear = [];
   (function buildSkyline() {
     var x = 0;
-    while (x < W * 2) {
+    while (x < CYCLE) {
       var w = 40 + Math.random() * 60, h = 40 + Math.random() * 70;
       skylineFar.push({ x: x, w: w, h: h });
       x += w + 10 + Math.random() * 30;
     }
     x = 0;
-    while (x < W * 2) {
+    while (x < CYCLE) {
       var w2 = 50 + Math.random() * 80, h2 = 20 + Math.random() * 45;
       skylineNear.push({ x: x, w: w2, h: h2 });
       x += w2 + 20 + Math.random() * 60;
@@ -187,23 +196,26 @@
     ctx.fillStyle = '#e5e7eb';
     for (var i = 0; i < stars.length; i++) {
       var s = stars[i];
+      if (s.x > W) continue;
       ctx.globalAlpha = 0.3 + 0.4 * Math.abs(Math.sin(s.x + distance * 0.001 + i));
       ctx.fillRect(s.x, s.y, s.r, s.r);
     }
     ctx.globalAlpha = 1;
 
     ctx.fillStyle = '#1f2937';
-    var off = (distance * 0.2) % (W * 2);
+    var off = (distance * 0.2) % CYCLE;
     for (var f = 0; f < skylineFar.length; f++) {
       var b = skylineFar[f];
-      var bx = ((b.x - off) % (W * 2) + W * 2) % (W * 2) - 60;
+      var bx = ((b.x - off) % CYCLE + CYCLE) % CYCLE - 100;
+      if (bx > W + 100) continue;
       ctx.fillRect(bx, GROUND_Y - 40 - b.h, b.w, b.h + 40);
     }
     ctx.fillStyle = '#273449';
-    var off2 = (distance * 0.5) % (W * 2);
+    var off2 = (distance * 0.5) % CYCLE;
     for (var n = 0; n < skylineNear.length; n++) {
       var b2 = skylineNear[n];
-      var bx2 = ((b2.x - off2) % (W * 2) + W * 2) % (W * 2) - 60;
+      var bx2 = ((b2.x - off2) % CYCLE + CYCLE) % CYCLE - 100;
+      if (bx2 > W + 100) continue;
       ctx.fillRect(bx2, GROUND_Y - 10 - b2.h, b2.w, b2.h + 10);
     }
 
